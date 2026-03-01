@@ -9,11 +9,11 @@
         .container { position: relative; width: 100%; max-width: 600px; }
         .imagem-tabela { width: 100%; display: block; }
 
-        /* Área de clique: começa na bolinha e vai até o botão Presentear */
+        /* Área de clique: cobre do nome até o botão Presentear */
         .item-area { 
             position: absolute; 
-            left: 14%;       /* Começa na bolinha branca */
-            width: 78%;      /* Estica até o final do botão Presentear */
+            left: 22%;       /* Começa no início do nome do presente */
+            width: 73%;      /* Vai até o final do botão Presentear */
             height: 4.2%; 
             display: flex; 
             align-items: center; 
@@ -22,20 +22,23 @@
             background: rgba(0,0,0,0); /* Invisível */
         }
 
-        /* O X que aparece quando reservado - POSICIONADO NA BOLINHA */
+        /* O X que aparece quando reservado - AJUSTADO PARA A BOLINHA */
         .marcado::before { 
             content: "X"; 
             color: #000; 
-            font-size: 22px; 
+            font-size: 20px; 
             font-weight: bold; 
             position: absolute;
-            left: 4px;       /* Ajuste horizontal para centralizar na bolinha */
+            
+            /* Joga o X para a esquerda, fora da área de clique, em cima da bolinha */
+            left: -35px;      
+            
             top: 50%;
             transform: translateY(-50%);
             z-index: 10;
         }
 
-        .marcado { pointer-events: none; } /* Bloqueia cliques após reserva */
+        .marcado { pointer-events: none; }
 
         /* Estilos do Modal */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 1000; }
@@ -78,56 +81,5 @@
 
     async function carregarReservas() {
         try {
-            const res = await fetch(scriptURL);
-            const reservados = await res.json();
-            reservados.forEach(id => {
-                const el = document.getElementById(id);
-                if(el) { 
-                    el.classList.add('marcado'); 
-                    el.onclick = null; 
-                }
-            });
-        } catch (e) { console.error("Erro ao carregar reservas", e); }
-    }
-
-    function abrirModal(item) {
-        document.getElementById('itemNome').innerText = item;
-        document.getElementById('meuModal').style.display = 'flex';
-    }
-
-    function fecharModal() { document.getElementById('meuModal').style.display = 'none'; }
-
-    document.getElementById('meuForm').onsubmit = async function(e) {
-        e.preventDefault();
-        const btn = document.getElementById('btnEnviar');
-        btn.innerText = "Salvando...";
-        const item = document.getElementById('itemNome').innerText;
-
-        const dados = {
-            nome: document.getElementById('nomeParticipante').value,
-            telefone: document.getElementById('telParticipante').value,
-            presente: item
-        };
-
-        try {
-            // Salva na planilha
-            await fetch(scriptURL, { method: 'POST', body: JSON.stringify(dados) });
-            
-            // Envia e-mail
-            fetch('https://formspree.io/f/mqedoegk', {
-                method: 'POST',
-                body: JSON.stringify(dados),
-                headers: { 'Accept': 'application/json' }
-            });
-
-            document.getElementById('conteudoModal').innerHTML = "<h3>Reservado!</h3><p>Obrigado pelo carinho!</p><button class='btn-confirmar' onclick='location.reload()'>Fechar</button>";
-        } catch (err) {
-            alert("Erro ao salvar. Tente novamente.");
-            btn.innerText = "CONFIRMAR RESERVA";
-        }
-    };
-
-    carregarReservas();
-</script>
-</body>
-</html>
+            const res =
+                
