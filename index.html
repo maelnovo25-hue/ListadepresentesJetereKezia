@@ -9,11 +9,11 @@
         .container { position: relative; width: 100%; max-width: 600px; }
         .imagem-tabela { width: 100%; display: block; }
 
-        /* Área de clique: Exatamente sobre o botão marrom "Presentear" */
+        /* Área de clique: Focada no botão marrom da direita */
         .item-area { 
             position: absolute; 
-            left: 70.5%;     /* Alinhado com o botão marrom */
-            width: 25.5%;    /* Largura do botão marrom */
+            left: 70%;       
+            width: 26%;      
             height: 4.2%;    
             display: flex; 
             align-items: center; 
@@ -23,19 +23,16 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* O X que aparece quando reservado - AGORA NA BOLINHA CENTRAL */
+        /* O X: Agora com ajuste de -62% para cair direto na bolinha central */
         .marcado::before { 
             content: "X"; 
             color: #000; 
-            font-size: 24px; 
+            font-size: 22px; 
             font-weight: bold; 
             position: absolute;
-            
-            /* Ajuste final: Move o X do botão marrom direto para a bolinha */
-            left: -65%;      /* Valor ajustado para centralizar na coluna SELECIONE */
-            
-            top: 50%;
-            transform: translateY(-50%);
+            left: -62%;      /* Este valor empurra o X do botão para a bolinha */
+            top: 48%;        
+            transform: translate(-50%, -50%);
             z-index: 20;
         }
 
@@ -61,81 +58,5 @@
     <div id="Geladeira" class="item-area" style="top: 55.9%;"></div>
     <div id="Fogão" class="item-area" style="top: 60.8%;"></div>
     <div id="Máquina de Lavar" class="item-area" style="top: 65.7%;"></div>
-    <div id="Micro-ondas" class="item-area" style="top: 70.6%;"></div>
-    <div id="Armário de Cozinha" class="item-area" style="top: 75.5%;"></div>
-    <div id="Sofá" class="item-area" style="top: 80.4%;"></div>
-</div>
-
-<div id="meuModal" class="modal">
-    <div class="modal-content">
-        <h3 id="itemNome"></h3>
-        <form id="meuForm">
-            <input type="text" id="nomeUser" placeholder="Seu Nome" required>
-            <input type="tel" id="telUser" placeholder="Seu Telefone" required>
-            <button type="submit" class="btn-confirmar" id="btnEnviar">CONFIRMAR RESERVA</button>
-        </form>
-        <span class="btn-cancelar" onclick="fecharModal()">Cancelar</span>
-    </div>
-</div>
-
-<script>
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbyOroKLmNDpA2KwAEcAMajO3T30HDxeE8L8HWruqMIXdhkg6QGDyB3EjmXSdeZbz71uDQ/exec';
-
-    async function carregarReservas() {
-        try {
-            const res = await fetch(scriptURL);
-            const reservados = await res.json();
-            reservados.forEach(id => {
-                const el = document.getElementById(id);
-                if(el) { el.classList.add('marcado'); }
-            });
-        } catch (e) { console.log("Erro ao carregar"); }
-    }
-
-    function abrirModal(item) {
-        document.getElementById('itemNome').innerText = item;
-        document.getElementById('meuModal').style.display = 'flex';
-    }
-
-    function fecharModal() {
-        document.getElementById('meuModal').style.display = 'none';
-    }
-
-    // Gerenciador de cliques nos botões marrons
-    document.querySelectorAll('.item-area').forEach(botao => {
-        botao.addEventListener('click', function() {
-            if (!this.classList.contains('marcado')) {
-                abrirModal(this.id);
-            }
-        });
-    });
-
-    document.getElementById('meuForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        const btn = document.getElementById('btnEnviar');
-        const item = document.getElementById('itemNome').innerText;
-        btn.innerText = "Enviando...";
-        btn.disabled = true;
-
-        const dados = {
-            nome: document.getElementById('nomeUser').value,
-            telefone: document.getElementById('telUser').value,
-            presente: item
-        };
-
-        try {
-            await fetch(scriptURL, { method: 'POST', body: JSON.stringify(dados) });
-            fetch('https://formspree.io/f/mqedoegk', { method: 'POST', body: JSON.stringify(dados), headers: { 'Accept': 'application/json' } });
-            
-            document.querySelector('.modal-content').innerHTML = "<h3>Reservado!</h3><p>Obrigado pelo presente!</p><button class='btn-confirmar' onclick='window.location.reload()'>OK</button>";
-        } catch (err) {
-            alert("Erro ao salvar.");
-            btn.innerText = "CONFIRMAR RESERVA";
-            btn.disabled = false;
-        }
-    });
-
-    carregarReservas();
-</script>
-</body>
-</html>
+    <div
+        
