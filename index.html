@@ -8,10 +8,9 @@
         body { margin: 0; padding: 0; display: flex; justify-content: center; background: #fdf8f5; font-family: sans-serif; }
         .container { position: relative; width: 100%; max-width: 600px; }
         .imagem-tabela { width: 100%; display: block; }
-        .item-container { position: absolute; left: 70%; width: 25%; height: 4.2%; display: flex; align-items: center; justify-content: center; }
-        .botao-clicavel { width: 100%; height: 100%; cursor: pointer; background: rgba(0,0,0,0); border: none; }
-        .marcado { pointer-events: none; }
+        .item-area { position: absolute; left: 70%; width: 25%; height: 4.2%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         .marcado::after { content: "X"; color: black; font-size: 24px; font-weight: bold; position: absolute; }
+        .marcado { pointer-events: none; }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 1000; }
         .modal-content { background: white; padding: 25px; border-radius: 15px; width: 85%; max-width: 320px; text-align: center; }
         input { width: 90%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; }
@@ -22,24 +21,24 @@
 
 <div class="container">
     <img src="tabela.jpg" class="imagem-tabela">
-    <div id="Guarda-roupa" class="item-container" style="top: 36.3%;"></div>
-    <div id="Mesa de Jantar" class="item-container" style="top: 41.2%;"></div>
-    <div id="Conjunto de Cadeiras" class="item-container" style="top: 46.1%;"></div>
-    <div id="Colchão Queen" class="item-container" style="top: 51.0%;"></div>
-    <div id="Geladeira" class="item-container" style="top: 55.9%;"></div>
-    <div id="Fogão" class="item-container" style="top: 60.8%;"></div>
-    <div id="Máquina de Lavar" class="item-container" style="top: 65.7%;"></div>
-    <div id="Micro-ondas" class="item-container" style="top: 70.6%;"></div>
-    <div id="Armário de Cozinha" class="item-container" style="top: 75.5%;"></div>
-    <div id="Sofá" class="item-container" style="top: 80.4%;"></div>
+    <div id="Guarda-roupa" class="item-area" style="top: 36.3%;" onclick="abrirModal('Guarda-roupa')"></div>
+    <div id="Mesa de Jantar" class="item-area" style="top: 41.2%;" onclick="abrirModal('Mesa de Jantar')"></div>
+    <div id="Conjunto de Cadeiras" class="item-area" style="top: 46.1%;" onclick="abrirModal('Conjunto de Cadeiras')"></div>
+    <div id="Colchão Queen" class="item-area" style="top: 51.0%;" onclick="abrirModal('Colchão Queen')"></div>
+    <div id="Geladeira" class="item-area" style="top: 55.9%;" onclick="abrirModal('Geladeira')"></div>
+    <div id="Fogão" class="item-area" style="top: 60.8%;" onclick="abrirModal('Fogão')"></div>
+    <div id="Máquina de Lavar" class="item-area" style="top: 65.7%;" onclick="abrirModal('Máquina de Lavar')"></div>
+    <div id="Micro-ondas" class="item-area" style="top: 70.6%;" onclick="abrirModal('Micro-ondas')"></div>
+    <div id="Armário de Cozinha" class="item-area" style="top: 75.5%;" onclick="abrirModal('Armário de Cozinha')"></div>
+    <div id="Sofá" class="item-area" style="top: 80.4%;" onclick="abrirModal('Sofá')"></div>
 </div>
 
 <div id="meuModal" class="modal">
     <div class="modal-content" id="conteudoModal">
         <h3 id="itemNome"></h3>
         <form id="meuForm">
-            <input type="text" id="nome" placeholder="Seu Nome" required>
-            <input type="tel" id="tel" placeholder="Seu Telefone" required>
+            <input type="text" id="nomeUser" placeholder="Seu Nome" required>
+            <input type="tel" id="telUser" placeholder="Seu Telefone" required>
             <button type="submit" class="btn-confirmar" id="btnEnviar">CONFIRMAR RESERVA</button>
         </form>
         <p onclick="fecharModal()" style="color:grey; cursor:pointer; margin-top:15px;">Cancelar</p>
@@ -47,22 +46,17 @@
 </div>
 
 <script>
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbz_uP7X8pA2v-Y2-O2-oVj2p-5W3uL7-v7yY-Q-0-0/exec'; // Link da API
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbyOroKLmNDpA2KwAEcAMajO3T30HDxeE8L8HWruqMIXdhkg6QGDyB3EjmXSdeZbz71uDQ/exec';
 
-    // 1. Carregar itens reservados ao abrir o site
     async function carregarReservas() {
-        const res = await fetch(scriptURL);
-        const reservados = await res.json();
-        const itens = ["Guarda-roupa", "Mesa de Jantar", "Conjunto de Cadeiras", "Colchão Queen", "Geladeira", "Fogão", "Máquina de Lavar", "Micro-ondas", "Armário de Cozinha", "Sofá"];
-        
-        itens.forEach(id => {
-            const div = document.getElementById(id);
-            if (reservados.includes(id)) {
-                div.classList.add('marcado');
-            } else {
-                div.innerHTML = `<button class="botao-clicavel" onclick="abrirModal('${id}')"></button>`;
-            }
-        });
+        try {
+            const res = await fetch(scriptURL);
+            const reservados = await res.json();
+            reservados.forEach(id => {
+                const el = document.getElementById(id);
+                if(el) { el.classList.add('marcado'); el.onclick = null; }
+            });
+        } catch (e) { console.error("Erro ao carregar", e); }
     }
 
     function abrirModal(item) {
@@ -72,30 +66,34 @@
 
     function fecharModal() { document.getElementById('meuModal').style.display = 'none'; }
 
-    // 2. Enviar reserva para a planilha e Formspree
     document.getElementById('meuForm').onsubmit = async function(e) {
         e.preventDefault();
         const btn = document.getElementById('btnEnviar');
-        btn.innerText = "Processando...";
+        btn.innerText = "Salvando...";
         const item = document.getElementById('itemNome').innerText;
 
         const dados = {
-            nome: document.getElementById('nome').value,
-            telefone: document.getElementById('tel').value,
+            nome: document.getElementById('nomeUser').value,
+            telefone: document.getElementById('telUser').value,
             presente: item
         };
 
-        // Envia para o Google Sheets
-        await fetch(scriptURL, { method: 'POST', body: JSON.stringify(dados) });
+        try {
+            // Salva na planilha via Script
+            await fetch(scriptURL, { method: 'POST', body: JSON.stringify(dados) });
+            
+            // Envia e-mail via Formspree
+            fetch('https://formspree.io/f/mqedoegk', {
+                method: 'POST',
+                body: JSON.stringify(dados),
+                headers: { 'Accept': 'application/json' }
+            });
 
-        // Envia para o Formspree (seu e-mail)
-        fetch('https://formspree.io/f/mqedoegk', {
-            method: 'POST',
-            body: JSON.stringify(dados),
-            headers: { 'Accept': 'application/json' }
-        });
-
-        document.getElementById('conteudoModal').innerHTML = "<h3>Reservado!</h3><p>Obrigado por presentear os noivos!</p><button class='btn-confirmar' onclick='window.location.reload()'>Fechar</button>";
+            document.getElementById('conteudoModal').innerHTML = "<h3>Reservado!</h3><p>Obrigado pelo carinho!</p><button class='btn-confirmar' onclick='location.reload()'>Fechar</button>";
+        } catch (err) {
+            alert("Erro ao salvar. Tente novamente.");
+            btn.innerText = "CONFIRMAR RESERVA";
+        }
     };
 
     carregarReservas();
