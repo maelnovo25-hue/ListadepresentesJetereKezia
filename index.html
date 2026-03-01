@@ -3,99 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista de Presentes - Jeter & Kezia</title>
+    <title>Lista de Presentes</title>
     <style>
-        body { margin: 0; padding: 0; display: flex; justify-content: center; background: #fdf8f5; font-family: sans-serif; }
+        body { margin: 0; display: flex; justify-content: center; background: #fdf8f5; font-family: sans-serif; }
         .container { position: relative; width: 100%; max-width: 600px; }
         .imagem-tabela { width: 100%; display: block; }
         
-        /* Áreas clicáveis */
-        .botao-clicavel { position: absolute; left: 70%; width: 25%; height: 4.2%; cursor: pointer; background: rgba(0,0,0,0); }
+        /* O X PRETO QUE VAI FICAR POR CIMA */
+        .marcado { position: absolute; left: 71%; width: 23%; height: 4.2%; background: rgba(0,0,0,0.85); color: white; display: flex; justify-content: center; align-items: center; font-weight: bold; border-radius: 5px; pointer-events: none; z-index: 10; }
+        .marcado::after { content: "X"; font-size: 22px; }
 
-        /* Estilo do Pop-up */
+        .botao-clicavel { position: absolute; left: 70%; width: 25%; height: 4.2%; cursor: pointer; background: rgba(0,0,0,0); border: none; }
+
+        /* Modal */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 1000; }
         .modal-content { background: white; padding: 25px; border-radius: 15px; width: 85%; max-width: 320px; text-align: center; border: 2px solid #b38b6d; }
-        h3 { color: #a67c52; margin-top: 0; }
-        input { width: 90%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; outline: none; }
-        .btn-confirmar { background: #b38b6d; color: white; border: none; padding: 12px; border-radius: 8px; width: 100%; cursor: pointer; font-weight: bold; margin-top: 10px; font-size: 16px; width: 100%; }
-        .btn-cancelar { color: #888; cursor: pointer; margin-top: 15px; display: block; font-size: 14px; text-decoration: underline; }
+        input { width: 90%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; }
+        .btn-confirmar { background: #b38b6d; color: white; border: none; padding: 12px; border-radius: 8px; width: 100%; cursor: pointer; font-weight: bold; font-size: 16px; }
     </style>
 </head>
 <body>
 
-<div class="container">
+<div class="container" id="lista-presentes">
     <img src="tabela.jpg" class="imagem-tabela">
-
-    <div class="botao-clicavel" style="top: 36.3%;" onclick="abrirModal('Guarda-roupa')"></div>
-    <div class="botao-clicavel" style="top: 41.2%;" onclick="abrirModal('Mesa de Jantar')"></div>
-    <div class="botao-clicavel" style="top: 46.1%;" onclick="abrirModal('Conjunto de Cadeiras')"></div>
-    <div class="botao-clicavel" style="top: 51.0%;" onclick="abrirModal('Colchão Queen')"></div>
-    <div class="botao-clicavel" style="top: 55.9%;" onclick="abrirModal('Geladeira')"></div>
-    <div class="botao-clicavel" style="top: 60.8%;" onclick="abrirModal('Fogão')"></div>
-    <div class="botao-clicavel" style="top: 65.7%;" onclick="abrirModal('Máquina de Lavar')"></div>
-    <div class="botao-clicavel" style="top: 70.6%;" onclick="abrirModal('Micro-ondas')"></div>
-    <div class="botao-clicavel" style="top: 75.5%;" onclick="abrirModal('Armário de Cozinha')"></div>
-    <div class="botao-clicavel" style="top: 80.4%;" onclick="abrirModal('Sofá')"></div>
-</div>
+    </div>
 
 <div id="meuModal" class="modal">
     <div class="modal-content" id="conteudoModal">
-        <h3 id="itemNome"></h3>
-        <p style="font-size: 14px; color: #666;">Preencha seus dados para reservar:</p>
-        
+        <h3 id="itemNome" style="color:#a67c52;"></h3>
         <form id="meuForm" action="https://formspree.io/f/mqedoegk" method="POST">
             <input type="hidden" name="Presente" id="inputPresente">
             <input type="text" name="Nome" placeholder="Seu Nome" required>
             <input type="tel" name="Telefone" placeholder="Seu Telefone" required>
-            <button type="submit" class="btn-confirmar">CONFIRMAR RESERVA</button>
+            <button type="submit" class="btn-confirmar">CONFIRMAR</button>
         </form>
-        
-        <span class="btn-cancelar" onclick="fecharModal()">Cancelar</span>
+        <p onclick="fecharModal()" style="color:grey; cursor:pointer; margin-top:15px;">Cancelar</p>
     </div>
 </div>
 
 <script>
-    const modal = document.getElementById('meuModal');
-    const form = document.getElementById('meuForm');
+    // ==========================================
+    // ÁREA DO NOIVO: MUDE PARA true PARA MARCAR COM X
+    // ==========================================
+    const statusItens = [
+        { nome: 'Guarda-roupa', top: '36.3%', reservado: false },
+        { nome: 'Mesa de Jantar', top: '41.2%', reservado: false },
+        { nome: 'Conjunto de Cadeiras', top: '46.1%', reservado: false },
+        { nome: 'Colchão Queen', top: '51.0%', reservado: false },
+        { nome: 'Geladeira', top: '55.9%', reservado: false },
+        { nome: 'Fogão', top: '60.8%', reservado: false },
+        { nome: 'Máquina de Lavar', top: '65.7%', reservado: false },
+        { nome: 'Micro-ondas', top: '70.6%', reservado: false },
+        { nome: 'Armário de Cozinha', top: '75.5%', reservado: false },
+        { nome: 'Sofá', top: '80.4%', reservado: false }
+    ];
+    // ==========================================
 
-    function abrirModal(item) {
-        document.getElementById('itemNome').innerText = item;
-        document.getElementById('inputPresente').value = item;
-        modal.style.display = 'flex';
+    const container = document.getElementById('lista-presentes');
+
+    statusItens.forEach(item => {
+        if (item.reservado) {
+            const divX = document.createElement('div');
+            divX.className = 'marcado';
+            divX.style.top = item.top;
+            container.appendChild(divX);
+        } else {
+            const btn = document.createElement('button');
+            btn.className = 'botao-clicavel';
+            btn.style.top = item.top;
+            btn.onclick = () => abrirModal(item.nome);
+            container.appendChild(btn);
+        }
+    });
+
+    function abrirModal(nome) {
+        document.getElementById('itemNome').innerText = nome;
+        document.getElementById('inputPresente').value = nome;
+        document.getElementById('meuModal').style.display = 'flex';
     }
+    function fecharModal() { document.getElementById('meuModal').style.display = 'none'; }
 
-    function fecharModal() {
-        modal.style.display = 'none';
-        // Limpa o formulário para a próxima pessoa
-        form.reset();
-    }
-
-    // Envio do formulário sem sair da página
-    form.onsubmit = function(e) {
+    document.getElementById('meuForm').onsubmit = function(e) {
         e.preventDefault();
-        const btn = form.querySelector('button');
+        const btn = this.querySelector('button');
         btn.innerText = "Enviando...";
-        btn.disabled = true;
-
-        fetch(form.action, {
+        fetch(this.action, {
             method: 'POST',
-            body: new FormData(form),
+            body: new FormData(this),
             headers: { 'Accept': 'application/json' }
-        }).then(response => {
-            if (response.ok) {
-                document.getElementById('conteudoModal').innerHTML = `
-                    <h3 style="color: green;">✔ Reservado!</h3>
-                    <p>Obrigado! Recebemos sua reserva.</p>
-                    <button class="btn-confirmar" onclick="location.reload()">Fechar</button>
-                `;
-            } else {
-                alert("Erro ao enviar. Tente novamente.");
-                btn.innerText = "CONFIRMAR RESERVA";
-                btn.disabled = false;
-            }
+        }).then(() => {
+            document.getElementById('conteudoModal').innerHTML = "<h3>Obrigado!</h3><p>Sua reserva foi enviada. Os noivos atualizarão o site em breve.</p><button class='btn-confirmar' onclick='location.reload()'>Fechar</button>";
         });
     };
 </script>
-
 </body>
 </html>
