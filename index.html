@@ -5,58 +5,229 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lista de Presentes - Jeter & Kezia</title>
     <style>
-        body { margin: 0; padding: 0; display: flex; justify-content: center; background: #fdf8f5; font-family: sans-serif; }
-        .container { position: relative; width: 100%; max-width: 600px; }
-        .imagem-tabela { width: 100%; display: block; }
-
-        /* Área de clique: Focada no botão marrom da direita */
-        .item-area { 
-            position: absolute; 
-            left: 70%;       
-            width: 26%;      
-            height: 4.2%;    
+        /* Estilos para visualização no celular */
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
             display: flex; 
+            flex-direction: column;
             align-items: center; 
-            cursor: pointer;
-            z-index: 10;
-            background: transparent;
-            -webkit-tap-highlight-color: transparent;
+            background-color: #fdf8f5; 
+            margin: 0; 
+            padding: 10px; 
         }
 
-        /* O X: Agora com ajuste de -62% para cair direto na bolinha central */
-        .marcado::before { 
-            content: "X"; 
-            color: #000; 
-            font-size: 22px; 
-            font-weight: bold; 
+        .container { 
+            position: relative; 
+            width: 100%; 
+            max-width: 500px; /* Ajuste ideal para telas de celular */
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .tabela-img { 
+            width: 100%; 
+            display: block; 
+            border-radius: 8px;
+        }
+        
+        /* Área de clique invisível sobre o quadrado marrom */
+        .btn-presentear {
             position: absolute;
-            left: -62%;      /* Este valor empurra o X do botão para a bolinha */
-            top: 48%;        
-            transform: translate(-50%, -50%);
-            z-index: 20;
+            right: 10%; 
+            width: 28%;
+            height: 4%;
+            cursor: pointer;
+            background: rgba(0,0,0,0); /* Totalmente transparente */
+            z-index: 10;
         }
 
-        .marcado { pointer-events: none !important; }
+        /* Marcação de 'Check' sobre a bolinha de seleção */
+        .check-marcado {
+            position: absolute;
+            left: 54.5%; 
+            font-weight: bold;
+            color: #5d4037; /* Marrom escuro */
+            font-size: 22px;
+            display: none;
+            z-index: 5;
+            transform: translateY(-20%);
+        }
 
-        /* Estilos do Modal (Pop-up) */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 9999; }
-        .modal-content { background: white; padding: 25px; border-radius: 15px; width: 80%; max-width: 300px; text-align: center; }
-        input { width: 90%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; }
-        .btn-confirmar { background: #b38b6d; color: white; border: none; padding: 15px; border-radius: 8px; width: 100%; cursor: pointer; font-weight: bold; font-size: 16px; }
-        .btn-cancelar { color: #888; cursor: pointer; display: block; margin-top: 15px; font-size: 14px; text-decoration: underline; }
+        .item-bloqueado { 
+            pointer-events: none; 
+            filter: grayscale(1);
+            opacity: 0.6;
+        }
+
+        /* Pop-ups Estilizados */
+        .overlay { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.75); 
+            display: none; justify-content: center; align-items: center; 
+            z-index: 100; 
+        }
+
+        .popup { 
+            background: white; padding: 25px; border-radius: 15px; 
+            width: 85%; max-width: 350px; position: relative; text-align: center; 
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+
+        .close-btn { 
+            position: absolute; top: 10px; right: 15px; 
+            cursor: pointer; font-size: 20px; color: #999; 
+        }
+
+        input { 
+            width: 100%; padding: 12px; margin: 10px 0; 
+            border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; 
+        }
+
+        button.confirmar { 
+            background-color: #8b5a2b; color: white; border: none; 
+            padding: 12px 25px; border-radius: 8px; cursor: pointer; 
+            font-weight: bold; width: 100%; margin-top: 10px;
+        }
+
+        /* Loading simples */
+        .loading { font-size: 12px; color: #666; margin-top: 10px; display: none; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <img src="tabela.jpg" class="imagem-tabela">
+    <img src="tabela.jpg" alt="Lista de Presentes" class="tabela-img">
     
-    <div id="Guarda-roupa" class="item-area" style="top: 36.3%;"></div>
-    <div id="Mesa de Jantar" class="item-area" style="top: 41.2%;"></div>
-    <div id="Conjunto de Cadeiras" class="item-area" style="top: 46.1%;"></div>
-    <div id="Colchão Queen" class="item-area" style="top: 51.0%;"></div>
-    <div id="Geladeira" class="item-area" style="top: 55.9%;"></div>
-    <div id="Fogão" class="item-area" style="top: 60.8%;"></div>
-    <div id="Máquina de Lavar" class="item-area" style="top: 65.7%;"></div>
-    <div
-        
+    <div id="camada-interativa"></div>
+</div>
+
+<div id="popCadastro" class="overlay">
+    <div class="popup">
+        <span class="close-btn" onclick="fecharPopup('popCadastro')">×</span>
+        <h3 style="color: #8b5a2b;">Agradecemos o carinho!</h3>
+        <p>Você escolheu presentear com:<br><strong id="nomePresente"></strong></p>
+        <input type="text" id="nomeUser" placeholder="Seu Nome Completo">
+        <input type="tel" id="whatsappUser" placeholder="Seu WhatsApp (ex: 21999999999)">
+        <button class="confirmar" onclick="enviarParaPlanilha()">Confirmar Presente</button>
+        <div id="statusEnvio" class="loading">Enviando... aguarde.</div>
+    </div>
+</div>
+
+<div id="popSucesso" class="overlay">
+    <div class="popup">
+        <span class="close-btn" onclick="fecharPopup('popSucesso')">×</span>
+        <h3 style="color: #2e7d32;">❤ Confirmado!</h3>
+        <p>Seu nome foi registrado na nossa lista. Muito obrigado por fazer parte desse momento!</p>
+        <button class="confirmar" onclick="fecharPopup('popSucesso')">Fechar</button>
+    </div>
+</div>
+
+<script>
+    // URL do seu Google Apps Script integrada
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbyOroKLmNDpA2KwAEcAMajO3T30HDxeE8L8HWruqMIXdhkg6QGDyB3EjmXSdeZbz71uDQ/exec';
+    
+    let itemSelecionado = "";
+    let indexGlobal = -1;
+
+    // Definição das posições dos itens (Ajuste os valores de 'top' se necessário)
+    const listaItens = [
+        { nome: "Guarda-roupa", top: 35.2 },
+        { nome: "Mesa de Jantar", top: 40.8 },
+        { nome: "Conjunto de Cadeiras", top: 46.4 },
+        { nome: "Colchão Queen", top: 51.8 },
+        { nome: "Geladeira", top: 57.3 },
+        { nome: "Fogão", top: 62.8 },
+        { nome: "Máquina de Lavar", top: 68.3 },
+        { nome: "Micro-ondas", top: 73.8 },
+        { nome: "Armário de Cozinha", top: 79.3 },
+        { nome: "Sofá", top: 84.8 }
+    ];
+
+    function inicializar() {
+        const camada = document.getElementById('camada-interativa');
+        listaItens.forEach((item, index) => {
+            // Botão Invisível
+            const btn = document.createElement('div');
+            btn.className = 'btn-presentear';
+            btn.style.top = item.top + "%";
+            btn.id = "btn-" + index;
+            btn.onclick = () => abrirPopCadastro(item.nome, index);
+            
+            // Ícone de Check
+            const check = document.createElement('div');
+            check.className = 'check-marcado';
+            check.style.top = item.top + "%";
+            check.id = "check-" + index;
+            check.innerHTML = "✔";
+
+            camada.appendChild(btn);
+            camada.appendChild(check);
+        });
+        sincronizarComPlanilha();
+    }
+
+    function abrirPopCadastro(nome, index) {
+        itemSelecionado = nome;
+        indexGlobal = index;
+        document.getElementById('nomePresente').innerText = nome;
+        document.getElementById('popCadastro').style.display = 'flex';
+    }
+
+    function fecharPopup(id) {
+        document.getElementById(id).style.display = 'none';
+    }
+
+    function enviarParaPlanilha() {
+        const nome = document.getElementById('nomeUser').value;
+        const tel = document.getElementById('whatsappUser').value;
+
+        if(!nome || !tel) {
+            alert("Por favor, preencha seu nome e contato.");
+            return;
+        }
+
+        document.getElementById('statusEnvio').style.display = 'block';
+
+        const formData = new FormData();
+        formData.append('nome', nome);
+        formData.append('telefone', tel);
+        formData.append('presente', itemSelecionado);
+
+        fetch(scriptURL, { method: 'POST', body: formData })
+        .then(() => {
+            document.getElementById('statusEnvio').style.display = 'none';
+            fecharPopup('popCadastro');
+            document.getElementById('popSucesso').style.display = 'flex';
+            marcarItemComoVendido(indexGlobal);
+        })
+        .catch(error => {
+            console.error('Erro!', error.message);
+            alert("Houve um erro ao salvar. Tente novamente.");
+            document.getElementById('statusEnvio').style.display = 'none';
+        });
+    }
+
+    function marcarItemComoVendido(index) {
+        const check = document.getElementById("check-" + index);
+        const btn = document.getElementById("btn-" + index);
+        if(check) check.style.display = "block";
+        if(btn) btn.classList.add("item-bloqueado");
+    }
+
+    function sincronizarComPlanilha() {
+        // Busca na planilha os itens que já possuem nome preenchido
+        fetch(scriptURL)
+        .then(res => res.json())
+        .then(itensJaEscolhidos => {
+            listaItens.forEach((item, index) => {
+                if (itensJaEscolhidos.includes(item.nome)) {
+                    marcarItemComoVendido(index);
+                }
+            });
+        });
+    }
+
+    window.onload = inicializar;
+</script>
+
+</body>
+</html>
