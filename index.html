@@ -9,29 +9,30 @@
         .container { position: relative; width: 100%; max-width: 600px; }
         .imagem-tabela { width: 100%; display: block; }
 
-        /* Área de clique: cobre do nome até o botão Presentear */
+        /* Área de clique: Restrita APENAS ao botão marrom "Presentear" */
         .item-area { 
             position: absolute; 
-            left: 22%;       /* Começa no início do nome do presente */
-            width: 73%;      /* Vai até o final do botão Presentear */
+            left: 70%;       /* Alinhado com o início do botão marrom */
+            width: 25%;      /* Largura exata do botão marrom */
             height: 4.2%; 
             display: flex; 
             align-items: center; 
             cursor: pointer;
             z-index: 5;
-            background: rgba(0,0,0,0); /* Invisível */
+            background: transparent;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        /* O X que aparece quando reservado - AJUSTADO PARA A BOLINHA */
+        /* O X que aparece quando reservado - POSICIONADO NA BOLINHA CENTRAL */
         .marcado::before { 
             content: "X"; 
             color: #000; 
-            font-size: 20px; 
+            font-size: 22px; 
             font-weight: bold; 
             position: absolute;
             
-            /* Joga o X para a esquerda, fora da área de clique, em cima da bolinha */
-            left: -35px;      
+            /* Ajuste para pular do botão marrom para a bolinha do meio */
+            left: -62%;      /* Move o X para a coluna Selecione */
             
             top: 50%;
             transform: translateY(-50%);
@@ -68,8 +69,8 @@
     <div class="modal-content" id="conteudoModal">
         <h3 id="itemNome"></h3>
         <form id="meuForm">
-            <input type="text" id="nomeParticipante" placeholder="Seu Nome" required>
-            <input type="tel" id="telParticipante" placeholder="Seu Telefone" required>
+            <input type="text" id="nomeUser" placeholder="Seu Nome" required>
+            <input type="tel" id="telUser" placeholder="Seu Telefone" required>
             <button type="submit" class="btn-confirmar" id="btnEnviar">CONFIRMAR RESERVA</button>
         </form>
         <p onclick="fecharModal()" style="color:grey; cursor:pointer; margin-top:15px;">Cancelar</p>
@@ -81,5 +82,54 @@
 
     async function carregarReservas() {
         try {
-            const res =
-                
+            const res = await fetch(scriptURL);
+            const reservados = await res.json();
+            reservados.forEach(id => {
+                const el = document.getElementById(id);
+                if(el) { 
+                    el.classList.add('marcado'); 
+                    el.onclick = null; 
+                }
+            });
+        } catch (e) { console.error("Erro ao carregar", e); }
+    }
+
+    function abrirModal(item) {
+        document.getElementById('itemNome').innerText = item;
+        document.getElementById('meuModal').style.display = 'flex';
+    }
+
+    function fecharModal() { document.getElementById('meuModal').style.display = 'none'; }
+
+    document.getElementById('meuForm').onsubmit = async function(e) {
+        e.preventDefault();
+        const btn = document.getElementById('btnEnviar');
+        btn.innerText = "Salvando...";
+        const item = document.getElementById('itemNome').innerText;
+
+        const dados = {
+            nome: document.getElementById('nomeUser').value,
+            telefone: document.getElementById('telUser').value,
+            presente: item
+        };
+
+        try {
+            await fetch(scriptURL, { method: 'POST', body: JSON.stringify(dados) });
+            
+            fetch('https://formspree.io/f/mqedoegk', {
+                method: 'POST',
+                body: JSON.stringify(dados),
+                headers: { 'Accept': 'application/json' }
+            });
+
+            document.getElementById('conteudoModal').innerHTML = "<h3>Reservado!</h3><p>Obrigado pelo carinho!</p><button class='btn-confirmar' onclick='location.reload()'>Fechar</button>";
+        } catch (err) {
+            alert("Erro ao salvar. Tente novamente.");
+            btn.innerText = "CONFIRMAR RESERVA";
+        }
+    };
+
+    carregarReservas();
+</script>
+</body>
+</html>
