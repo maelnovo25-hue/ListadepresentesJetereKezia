@@ -8,9 +8,36 @@
         body { margin: 0; padding: 0; display: flex; justify-content: center; background: #fdf8f5; font-family: sans-serif; }
         .container { position: relative; width: 100%; max-width: 600px; }
         .imagem-tabela { width: 100%; display: block; }
-        .item-area { position: absolute; left: 70%; width: 25%; height: 4.2%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        .marcado::after { content: "X"; color: black; font-size: 24px; font-weight: bold; position: absolute; }
-        .marcado { pointer-events: none; }
+
+        /* Área de clique: começa na bolinha e vai até o botão Presentear */
+        .item-area { 
+            position: absolute; 
+            left: 14%;       /* Começa na bolinha branca */
+            width: 78%;      /* Estica até o final do botão Presentear */
+            height: 4.2%; 
+            display: flex; 
+            align-items: center; 
+            cursor: pointer;
+            z-index: 5;
+            background: rgba(0,0,0,0); /* Invisível */
+        }
+
+        /* O X que aparece quando reservado - POSICIONADO NA BOLINHA */
+        .marcado::before { 
+            content: "X"; 
+            color: #000; 
+            font-size: 22px; 
+            font-weight: bold; 
+            position: absolute;
+            left: 4px;       /* Ajuste horizontal para centralizar na bolinha */
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 10;
+        }
+
+        .marcado { pointer-events: none; } /* Bloqueia cliques após reserva */
+
+        /* Estilos do Modal */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 1000; }
         .modal-content { background: white; padding: 25px; border-radius: 15px; width: 85%; max-width: 320px; text-align: center; }
         input { width: 90%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; }
@@ -21,6 +48,7 @@
 
 <div class="container">
     <img src="tabela.jpg" class="imagem-tabela">
+    
     <div id="Guarda-roupa" class="item-area" style="top: 36.3%;" onclick="abrirModal('Guarda-roupa')"></div>
     <div id="Mesa de Jantar" class="item-area" style="top: 41.2%;" onclick="abrirModal('Mesa de Jantar')"></div>
     <div id="Conjunto de Cadeiras" class="item-area" style="top: 46.1%;" onclick="abrirModal('Conjunto de Cadeiras')"></div>
@@ -37,8 +65,8 @@
     <div class="modal-content" id="conteudoModal">
         <h3 id="itemNome"></h3>
         <form id="meuForm">
-            <input type="text" id="nomeUser" placeholder="Seu Nome" required>
-            <input type="tel" id="telUser" placeholder="Seu Telefone" required>
+            <input type="text" id="nomeParticipante" placeholder="Seu Nome" required>
+            <input type="tel" id="telParticipante" placeholder="Seu Telefone" required>
             <button type="submit" class="btn-confirmar" id="btnEnviar">CONFIRMAR RESERVA</button>
         </form>
         <p onclick="fecharModal()" style="color:grey; cursor:pointer; margin-top:15px;">Cancelar</p>
@@ -54,9 +82,12 @@
             const reservados = await res.json();
             reservados.forEach(id => {
                 const el = document.getElementById(id);
-                if(el) { el.classList.add('marcado'); el.onclick = null; }
+                if(el) { 
+                    el.classList.add('marcado'); 
+                    el.onclick = null; 
+                }
             });
-        } catch (e) { console.error("Erro ao carregar", e); }
+        } catch (e) { console.error("Erro ao carregar reservas", e); }
     }
 
     function abrirModal(item) {
@@ -73,16 +104,16 @@
         const item = document.getElementById('itemNome').innerText;
 
         const dados = {
-            nome: document.getElementById('nomeUser').value,
-            telefone: document.getElementById('telUser').value,
+            nome: document.getElementById('nomeParticipante').value,
+            telefone: document.getElementById('telParticipante').value,
             presente: item
         };
 
         try {
-            // Salva na planilha via Script
+            // Salva na planilha
             await fetch(scriptURL, { method: 'POST', body: JSON.stringify(dados) });
             
-            // Envia e-mail via Formspree
+            // Envia e-mail
             fetch('https://formspree.io/f/mqedoegk', {
                 method: 'POST',
                 body: JSON.stringify(dados),
